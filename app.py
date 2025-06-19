@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify, session
 import pandas as pd
 import re
 import logging
+import os
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'  # Required for session support
@@ -9,9 +10,10 @@ app.secret_key = 'your_secret_key_here'  # Required for session support
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 
-# Load Excel data
+# Load Excel data from relative path
 try:
-    df = pd.read_excel(r"C:\Users\Amareesh K\New\MandatesData.xlsx")
+    excel_path = os.path.join(os.path.dirname(__file__), "MandatesData.xlsx")
+    df = pd.read_excel(excel_path)
     df["Mandate ID"] = df["Mandate ID"].astype(int)
 except Exception as e:
     logging.error(f"Error loading Excel file: {e}")
@@ -19,7 +21,7 @@ except Exception as e:
 
 def get_mandate_info(text):
     try:
-        # Support fuzzy detection like "82 669" or "mandate 82-669"
+        # Detect Mandate ID like "82 669" or "mandate 82-669"
         match = re.search(r'\b\d{2}[\s-]?\d{3}\b', text)
         if match:
             mandate_id = int(re.sub(r'\D', '', match.group()))
@@ -62,7 +64,7 @@ def get_mandate_info(text):
         if "issue size" in text_lower:
             return f"<p><strong>Mandate ID:</strong> {mandate_id}</p><p><strong>Issue Size:</strong> {record.get('Issue Size', 'N/A')} Cr</p>"
 
-        # Fallback: Show full details
+        # Fallback: Full record
         published_date = record.get('Published Date')
         published_date_str = published_date.strftime('%Y-%m-%d') if pd.notnull(published_date) else "N/A"
 
@@ -91,6 +93,3 @@ def ask():
     user_text = request.json.get("message", "")
     reply = get_mandate_info(user_text)
     return jsonify({"reply": reply})
-
-if __name__ == "__main__":
-    app.run(debug=True)
