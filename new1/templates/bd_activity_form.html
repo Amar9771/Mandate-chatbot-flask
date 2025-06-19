@@ -1,0 +1,22 @@
+<!-- templates/bd_activity_form.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add BD Activity</title>
+</head>
+<body>
+    <h1>Add BD Activity for {{ company_name }}</h1>
+    <form method="POST">
+        <label>BD Name:</label>
+        <input type="text" name="bd_name" required><br><br>
+
+        <label>Person Met:</label>
+        <input type="text" name="person_met" required><br><br>
+
+        <label>Minutes:</label><br>
+        <textarea name="minutes" rows="5" cols="50" required></textarea><br><br>
+
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

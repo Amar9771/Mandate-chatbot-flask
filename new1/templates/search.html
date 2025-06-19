@@ -1,0 +1,26 @@
+<!-- templates/search.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Company Search</title>
+</head>
+<body>
+    <h1>Search for a Company</h1>
+    <form method="POST">
+        <input type="text" name="company_name" placeholder="Enter company name" required>
+        <button type="submit">Search</button>
+    </form>
+
+    {% if company %}
+        <h2>Company Details</h2>
+        <p>Name: {{ company.CompanyName }}</p>
+        <p>Address: {{ company.Address }}</p>
+        <p>Email: {{ company.Email }}</p>
+        <p>Phone: {{ company.Phone }}</p>
+        <p>Brief: {{ company.Brief }}</p>
+
+        <a href="{{ url_for('bd_activity', company_name=company.CompanyName) }}">Add BD Activity</a><br>
+        <a href="{{ url_for('generate_profile', company_name=company.CompanyName) }}">Generate Profile</a>
+    {% endif %}
+</body>
+</html>

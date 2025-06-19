@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mandate Chatbot</title>
+  <style>
+    body { font-family: Arial; margin: 0; padding: 0; }
+    #chatbox {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      padding: 10px;
+    }
+
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: 10px;
+    }
+
+    .message {
+      background: #e8e8e8;
+      padding: 10px;
+      margin: 5px;
+      border-radius: 5px;
+    }
+
+    .user {
+      background-color: #cce5ff;
+      align-self: flex-end;
+    }
+
+    .bot {
+      background-color: #d4edda;
+      align-self: flex-start;
+    }
+
+    #input-area {
+      display: flex;
+    }
+
+    input {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 10px;
+      background: #007bff;
+      color: white;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="chatbox">
+    <div id="messages"></div>
+    <div id="input-area">
+      <input type="text" id="userInput" placeholder="Ask about mandate ID..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    function sendMessage() {
+      const input = document.getElementById("userInput");
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      addMessage("user", msg);
+      input.value = "";
+
+      fetch("/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg })
+      })
+      .then(res => res.json())
+      .then(data => {
+        addMessage("bot", data.reply);
+      });
+    }
+
+    function addMessage(sender, text) {
+      const msgDiv = document.createElement("div");
+      msgDiv.className = `message ${sender}`;
+      msgDiv.innerHTML = text;
+      document.getElementById("messages").appendChild(msgDiv);
+      msgDiv.scrollIntoView();
+    }
+  </script>
+</body>
+</html>
