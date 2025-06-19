@@ -2,17 +2,16 @@ from flask import Flask, render_template, request, jsonify, session
 import pandas as pd
 import re
 import logging
-import os
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key_here'
+app.secret_key = 'your_secret_key_here'  # Required for session support
 
+# Setup logging
 logging.basicConfig(level=logging.INFO)
 
-# Load Excel data using relative path
+# Load Excel data
 try:
-    excel_path = os.path.join(os.path.dirname(__file__), "MandatesData.xlsx")
-    df = pd.read_excel(excel_path)
+    df = pd.read_excel(r"C:\Users\Amareesh K\New\MandatesData.xlsx")
     df["Mandate ID"] = df["Mandate ID"].astype(int)
 except Exception as e:
     logging.error(f"Error loading Excel file: {e}")
@@ -20,6 +19,7 @@ except Exception as e:
 
 def get_mandate_info(text):
     try:
+        # Support fuzzy detection like "82 669" or "mandate 82-669"
         match = re.search(r'\b\d{2}[\s-]?\d{3}\b', text)
         if match:
             mandate_id = int(re.sub(r'\D', '', match.group()))
@@ -38,26 +38,33 @@ def get_mandate_info(text):
 
         if "analyst" in text_lower:
             return f"<p><strong>Mandate ID:</strong> {mandate_id}</p><p><strong>Analyst:</strong> {record.get('Analyst', 'N/A')}</p>"
+
         if "chairperson" in text_lower or "cp" in text_lower:
             return f"<p><strong>Mandate ID:</strong> {mandate_id}</p><p><strong>Chairperson:</strong> {record.get('Chairperson', 'N/A')}</p>"
+
         if "rating type" in text_lower:
             return f"<p><strong>Mandate ID:</strong> {mandate_id}</p><p><strong>Rating Type:</strong> {record.get('Rating Type', 'N/A')}</p>"
+
         if "rating" in text_lower:
             return f"<p><strong>Mandate ID:</strong> {mandate_id}</p><p><strong>Rating:</strong> {record.get('Rating', 'N/A')}</p>"
+
         if "status" in text_lower:
             return f"<p><strong>Mandate ID:</strong> {mandate_id}</p><p><strong>Status:</strong> {record.get('Mandate Status', 'N/A')}</p>"
+
         if "rating action" in text_lower:
             return f"<p><strong>Mandate ID:</strong> {mandate_id}</p><p><strong>Rating Action:</strong> {record.get('RatingAction', 'N/A')}</p>"
+
         if "published date" in text_lower:
-            pd_date = record.get('Published Date')
-            pd_str = pd_date.strftime('%Y-%m-%d') if pd.notnull(pd_date) else "N/A"
-            return f"<p><strong>Mandate ID:</strong> {mandate_id}</p><p><strong>Published Date:</strong> {pd_str}</p>"
+            published_date = record.get('Published Date')
+            published_date_str = published_date.strftime('%Y-%m-%d') if pd.notnull(published_date) else "N/A"
+            return f"<p><strong>Mandate ID:</strong> {mandate_id}</p><p><strong>Published Date:</strong> {published_date_str}</p>"
+
         if "issue size" in text_lower:
             return f"<p><strong>Mandate ID:</strong> {mandate_id}</p><p><strong>Issue Size:</strong> {record.get('Issue Size', 'N/A')} Cr</p>"
 
-        # Fallback: full record
-        pd_date = record.get('Published Date')
-        pd_str = pd_date.strftime('%Y-%m-%d') if pd.notnull(pd_date) else "N/A"
+        # Fallback: Show full details
+        published_date = record.get('Published Date')
+        published_date_str = published_date.strftime('%Y-%m-%d') if pd.notnull(published_date) else "N/A"
 
         return f"""
         <p><strong>Mandate ID:</strong> {mandate_id}</p>
@@ -67,7 +74,7 @@ def get_mandate_info(text):
         <p><strong>Rating:</strong> {record.get('Rating', 'N/A')}</p>
         <p><strong>Mandate Status:</strong> {record.get('Mandate Status', 'N/A')}</p>
         <p><strong>Rating Action:</strong> {record.get('RatingAction', 'N/A')}</p>
-        <p><strong>Published Date:</strong> {pd_str}</p>
+        <p><strong>Published Date:</strong> {published_date_str}</p>
         <p><strong>Issue Size:</strong> {record.get('Issue Size', 'N/A')} Cr</p>
         """
 
@@ -86,5 +93,4 @@ def ask():
     return jsonify({"reply": reply})
 
 if __name__ == "__main__":
-    # Run without debug and reloader to avoid signal error
-    app.run(debug=False, use_reloader=False, port=8080)
+    app.run(debug=True)
