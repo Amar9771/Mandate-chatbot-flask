@@ -93,3 +93,7 @@ def ask():
     user_text = request.json.get("message", "")
     reply = get_mandate_info(user_text)
     return jsonify({"reply": reply})
+
+if __name__ == "__main__":
+    # Disable debug and reloader to avoid signal-related errors in restricted environments
+    app.run(debug=False, use_reloader=False)
